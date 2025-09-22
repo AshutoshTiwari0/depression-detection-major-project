@@ -173,7 +173,7 @@ def main_page_dl():
     )
 
     #RNN image 
-    st.image('rnn.webp',use_container_width=True)
+    st.image('rnn.webp',use_column_width=True)
     st.markdown(
     """
     <h3 style='
