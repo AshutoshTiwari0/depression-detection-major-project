@@ -289,7 +289,7 @@ def main_page_dl():
     )
 
     #RNN image 
-    st.image('rnn.webp',use_container_width=True)
+    st.image('rnn.webp',use_column_width=True)
     st.markdown(
     """
     <h3 style='
@@ -351,6 +351,7 @@ def main_page_dl():
         st.warning('Please enter some text to predict')
 
 
+<<<<<<< HEAD
 # 1. Initialize session state
 if 'user_email' not in st.session_state:
     st.session_state.user_email = None
@@ -382,3 +383,7 @@ else:
 
 #demo_name = st.sidebar.selectbox("Choose a page", page_names_to_funcs.keys())
 #page_names_to_funcs[demo_name]()
+=======
+demo_name = st.sidebar.selectbox("Choose a page", page_names_to_funcs.keys())
+page_names_to_funcs[demo_name]()
+>>>>>>> ebc9bb12ebec87bc7cddcffe9a047ce446c21d28
