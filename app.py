@@ -5,7 +5,123 @@ import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.text import Tokenizer
+from pathlib import Path
+import streamlit_authenticator as stauth
+from supabase import create_client, Client
+import os
+from dotenv import load_dotenv
 import numpy as np
+
+
+# Load environment variables from .env file
+load_dotenv()
+
+url = os.getenv("SUPABASE_URL")
+key = os.getenv("SUPABASE_KEY")
+supabase = create_client(url, key)
+
+def sign_up_user(email, password):
+    try:
+        user = supabase.auth.sign_up({
+            "email": email,
+            "password": password
+        })
+        return user
+    except Exception as e:
+        st.error(f"Error signing up: {e}")
+        return None
+
+def sign_in_user(email, password):
+    try:
+        user = supabase.auth.sign_in_with_password({
+            "email": email,
+            "password": password
+        })
+        return user
+    except Exception as e:
+        st.error(f"Error signing in: {e}")
+        return None
+def sign_out_user():
+    try:
+        # Server-side sign out
+        supabase.auth.sign_out()
+
+        # Clear all user/session info in Streamlit
+        # IMPORTANT: Delete the correct key from Streamlit's session state
+        if 'user_email' in st.session_state:
+            del st.session_state['user_email']
+
+        # Force rerun so UI updates immediately
+        st.rerun()
+        auth_screen()
+    except Exception as e:
+        st.error(f"Error signing out: {e}")
+
+def auth_screen():
+    st.title('Depression Detection App')
+    
+    option=st.selectbox('Select an option', key="auth_option",options=['Sign In', 'Sign Up'])
+    email=st.text_input('Email',key="auth_email")
+    password=st.text_input('Password', type='password',key="auth_password")
+
+    if option=='Sign Up' and st.button('Register',key='signup_button'):
+        user=sign_up_user(email, password)
+        if user and user.user:
+            st.success('Sign up successful! Please sign in.')
+
+    if option=='Sign In' and st.button('Login',key='login_button'):
+        user=sign_in_user(email, password)
+        if user and user.user:
+            st.session_state.user_email=user.user.email
+            st.success('Sign in successful {email}!')
+            st.rerun()
+
+
+
+
+# if 'user_email' not in st.session_state:
+#     st.session_state.user_email=None
+
+# if not st.session_state.user_email:
+#     # Only show authentication screen if user not logged in
+#     st.sidebar.info("🔒 Please sign in to access the app.")
+#     auth_screen()
+# else:
+#     # Show sidebar navigation once logged in
+#     st.sidebar.success(f"✅ Logged in as {st.session_state.user_email}")
+
+#     # Define accessible pages
+#     page_names_to_funcs = {
+#         "Introduction": intro_page,
+#         "Detection ML based": main_page_ml,
+#         "Detection DL based": main_page_dl
+#     }
+
+#     # Sidebar selection
+#     demo_name = st.sidebar.selectbox("Choose a page", page_names_to_funcs.keys(), key="page_select")
+#     page_names_to_funcs[demo_name]()
+
+#     # Logout button
+#     if st.sidebar.button("🚪 Sign Out"):
+#         sign_out_user()
+#         st.rerun()
+
+
+# Initialize session state at the very top of your script
+#if "user_email" not in st.session_state:
+ #   st.session_state.user_email = None
+
+# Now, the rest of your app can safely check the value
+#if not st.session_state.user_email:
+    # User is not logged in, show the login screen
+ #   auth_screen()
+#else:
+    # User is logged in, show the main app
+ #   st.sidebar.success(f"✅ Logged in as {st.session_state.user_email}")
+    # ... rest of your logged-in logic
+
+
+
 def intro_page():
     #some information about depression 
     components.html(
@@ -234,11 +350,35 @@ def main_page_dl():
     else:
         st.warning('Please enter some text to predict')
 
-page_names_to_funcs = {
-    "Introduction": intro_page,
-    "Detection ML based": main_page_ml,
-    "Detection DL based": main_page_dl
-}
 
-demo_name = st.sidebar.selectbox("Choose a page", page_names_to_funcs.keys())
-page_names_to_funcs[demo_name]()
+# 1. Initialize session state
+if 'user_email' not in st.session_state:
+    st.session_state.user_email = None
+
+# Main control flow
+if not st.session_state.user_email:
+    # If user is not logged in, show the authentication screen
+    auth_screen()
+else:
+    # If user is logged in, show the main application
+    st.sidebar.success(f"✅ Logged in as {st.session_state.user_email}")
+
+     #Define pages for logged-in users
+    page_names_to_funcs = {
+        "Introduction": intro_page,
+        "Detection ML based": main_page_ml,
+        "Detection DL based": main_page_dl
+    }
+
+    # Sidebar page selection
+    selected_page = st.sidebar.selectbox("Choose a page", page_names_to_funcs.keys())
+    page_names_to_funcs[selected_page]()
+
+    # Logout button
+    if st.sidebar.button("🚪 Sign Out"):
+        sign_out_user()
+        st.rerun()
+
+
+#demo_name = st.sidebar.selectbox("Choose a page", page_names_to_funcs.keys())
+#page_names_to_funcs[demo_name]()
