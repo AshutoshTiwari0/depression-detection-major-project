@@ -8,9 +8,4 @@ streamlit==1.39.0
 nltk>=3.9.1
 joblib>=1.2.0
 seaborn>=0.13.2
-<<<<<<< HEAD
 tensorflow>=2.13
-=======
-tensorflow>=2.13
->>>>>>> ebc9bb12ebec87bc7cddcffe9a047ce446c21d28
-speechrecognition>=3.8.1
