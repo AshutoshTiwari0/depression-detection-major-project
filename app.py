@@ -225,13 +225,14 @@ def main_page_dl():
         padded = np.array(tf.keras.preprocessing.sequence.pad_sequences(seq, maxlen=500))
         result = model.predict(padded)[0][0]
 
-    prob = float(result)  # convert to regular Python float
-    if prob > 0.5:
-        st.warning(f'The text shows some signs of depression with probability {prob*100:.2f}%')
+        prob = float(result)  # convert to regular Python float
+        if prob > 0.5:
+            st.warning(f'The text shows some signs of depression with probability {prob*100:.2f}%')
+        else:
+            st.success(f'The text shows no signs of depression with probability {100 - prob*100:.2f}%')
     else:
-        st.success(f'The text shows no signs of depression with probability {100 - prob*100:.2f}%')
-else:
-    st.warning('Please enter some text to predict')
+        st.warning('Please enter some text to predict')
+
 
 
 
