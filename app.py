@@ -221,15 +221,18 @@ def main_page_dl():
     model = tf.keras.models.load_model('rnn_fastext.h5')
 
     if text.strip():
-        seq = tokenizer.texts_to_sequences([text])
-        padded = np.array(tf.keras.preprocessing.sequence.pad_sequences(seq, maxlen=500))
-        result = model.predict(padded)[0][0]
-        if result > 0.5:
-            st.warning(f'The text shows some signs of depression with probability {round(result*100,2)}%')
-        else:
-            st.success('The text shows no signs of depression')
+    seq = tokenizer.texts_to_sequences([text])
+    padded = np.array(tf.keras.preprocessing.sequence.pad_sequences(seq, maxlen=500))
+    result = model.predict(padded)[0][0]
+
+    prob = float(result)  # convert to regular Python float
+    if prob > 0.5:
+        st.warning(f'The text shows some signs of depression with probability {prob*100:.2f}%')
     else:
-        st.warning('Please enter some text to predict')
+        st.success(f'The text shows no signs of depression with probability {100 - prob*100:.2f}%')
+else:
+    st.warning('Please enter some text to predict')
+
 
 
 # 1. Initialize session state
