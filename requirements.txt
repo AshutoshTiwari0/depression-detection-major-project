@@ -13,3 +13,4 @@ tensorflow>=2.13
 =======
 tensorflow>=2.13
 >>>>>>> ebc9bb12ebec87bc7cddcffe9a047ce446c21d28
+speechrecognition>=3.8.1

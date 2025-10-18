@@ -12,6 +12,8 @@ import os
 from dotenv import load_dotenv
 import numpy as np
 
+#voice input
+import speech_recognition as sr
 
 # Load environment variables from .env file
 load_dotenv()
@@ -175,183 +177,100 @@ def intro_page():
         height=800
     )
 
+# ------------------- Voice Input -------------------
+def get_transcribed_text():
+    if "transcribed_text" not in st.session_state:
+        st.session_state.transcribed_text = ""
 
+    st.markdown("#### 🎤 Or record your voice:")
+    r = sr.Recognizer()
+    audio_value = st.audio_input("Record a voice message")
 
+    if audio_value is not None:
+        with open("temp_audio.wav", "wb") as f:
+            f.write(audio_value.getvalue())
+        try:
+            with sr.AudioFile("temp_audio.wav") as source:
+                audio_data = r.record(source)
+                text_from_audio = r.recognize_google(audio_data)
+                st.session_state.transcribed_text = text_from_audio
+                st.info(f"🗣 You said: **{text_from_audio}**")
+        except sr.UnknownValueError:
+            st.error("❌ Could not understand the audio.")
+            st.session_state.transcribed_text = ""
+        except sr.RequestError as e:
+            st.error(f"⚠️ Google Speech Recognition error: {e}")
+            st.session_state.transcribed_text = ""
+        finally:
+            os.remove("temp_audio.wav")
+
+# ------------------- ML Page -------------------
 def main_page_ml():
-    st.title('Sentia - Depression Detection App')
-    st.markdown(
-    """
-    <div style="
-        font-family: 'Segoe UI', sans-serif;
-        text-align: center;
-        background: linear-gradient(to right, #f8f9fa, #eaeaea);
-        padding: 20px;
-        border-radius: 12px;
-        box-shadow: 2px 2px 10px rgba(0,0,0,0.1);
-        margin-bottom: 25px;
-    ">
-        <h2 style="color: #222; margin-bottom: 10px;">
-            👋 Welcome to <span style="color:#0077b6;">Sentia</span>
-        </h2>
-        <p style="color: #444; font-size: 16px; line-height: 1.6;">
-            A depression detection app leveraging <b>Natural Language Processing (NLP)</b>, 
-            <b>Machine Learning (ML)</b>, and <b>Deep Learning (DL)</b> 
-            to predict emotions from text and support early awareness.
+    st.title('Sentia - Depression Detection App (ML)')
+    st.markdown("""
+    <div style="font-family:'Segoe UI',sans-serif;text-align:center;
+        background:linear-gradient(to right,#f8f9fa,#eaeaea);padding:20px;
+        border-radius:12px;box-shadow:2px 2px 10px rgba(0,0,0,0.1);margin-bottom:25px;">
+        <h2 style="color:#222;margin-bottom:10px;">👋 Welcome to <span style="color:#0077b6;">Sentia</span></h2>
+        <p style="color:#444;font-size:16px;line-height:1.6;">
+        A depression detection app using NLP and ML.
         </p>
     </div>
-    """,
-    unsafe_allow_html=True
-    )
+    """, unsafe_allow_html=True)
 
-    st.markdown(
-    """
-    <h3 style='
-        text-align: center; 
-        color: #0077b6; 
-        font-family: "Segoe UI", sans-serif; 
-        margin-bottom: 10px;
-    '>
-        ✍️ Enter Text Below
-    </h3>
-    """,
-    unsafe_allow_html=True
-    )
+    text = st.text_area(label='', max_chars=200, placeholder='Enter text or record voice...', height=100)
+    if text.strip():
+        st.session_state.transcribed_text = ""
 
-    # Custom CSS for input box
-    st.markdown(
-    """
-    <style>
-    div[data-baseweb="input"] {
-        width: 100% !important;      /* stretch full width */
-    }
-    div[data-baseweb="input"] > div {
-        font-size: 18px !important;  /* bigger text */
-        padding: 12px !important;    /* spacing inside */
-        border-radius: 10px !important; /* rounded corners */
-        border: 2px solid #0077b6 !important; /* blue border */
-        box-shadow: 1px 1px 6px rgba(0,0,0,0.1) !important;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True  
-    )
-     #taking the input from user
-    text=st.text_area(label='',
-                      max_chars=200,
-                      placeholder='Enter text',
-                      height=100)
-    
+    get_transcribed_text()
 
-    #loading the models and vectorizer
-    model=pickle.load(open('model.pkl','rb'))
-    vectorizer=pickle.load(open('tfidf.pkl','rb'))
+    if st.session_state.transcribed_text and not text.strip():
+        text = st.session_state.transcribed_text
 
-    #converting text to vector and making prediction
-    if text is not None and text!='':
-        #making prediction
-        vectorized_text=vectorizer.transform([text])
-        result=model.predict(vectorized_text)[0]
+    model = pickle.load(open('model.pkl','rb'))
+    vectorizer = pickle.load(open('tfidf.pkl','rb'))
 
-        if result==1:
+    if text.strip():
+        vectorized_text = vectorizer.transform([text])
+        result = model.predict(vectorized_text)[0]
+        if result == 1:
             st.warning('The text shows some signs of depression')
         else:
             st.success('The text shows no signs of depression')
     else:
         st.warning('Please enter some text to predict')
 
-#for future use DEEP LEARNING RNN BASED
+# ------------------- DL Page -------------------
 def main_page_dl():
-    st.title('Sentia - Depression Detection App')
-    st.markdown(
-    """
-    <div style="
-        font-family: 'Segoe UI', sans-serif;
-        text-align: center;
-        background: linear-gradient(to right, #f8f9fa, #eaeaea);
-        padding: 20px;
-        border-radius: 12px;
-        box-shadow: 2px 2px 10px rgba(0,0,0,0.1);
-        margin-bottom: 25px;
-    ">
-        <h2 style="color: #222; margin-bottom: 10px;">
-            👋 Welcome to <span style="color:#0077b6;">Sentia</span>
-        </h2>
-        <p style="color: #444; font-size: 16px; line-height: 1.6;">
-            A depression detection app leveraging <b>Natural Language Processing (NLP)</b>, 
-            <b>Machine Learning (ML)</b>, and <b>Deep Learning (DL)</b> 
-            to predict emotions from text and support early awareness.
+    st.title('Sentia - Depression Detection App (DL)')
+    st.image('rnn.webp', use_column_width=True)
+    st.markdown("✍️ Enter Text Below", unsafe_allow_html=True)
 
-            This page uses deep learning RNN based model
-       
-    </div>
-    """,
-    unsafe_allow_html=True
-    )
+    text = st.text_area(label='', max_chars=200, placeholder='Enter text', height=100)
+    if text.strip():
+        st.session_state.transcribed_text = ""
 
-    #RNN image 
-    st.image('rnn.webp',use_column_width=True)
-    st.markdown(
-    """
-    <h3 style='
-        text-align: center; 
-        color: #0077b6; 
-        font-family: "Segoe UI", sans-serif; 
-        margin-bottom: 10px;
-    '>
-        ✍️ Enter Text Below
-    </h3>
-    """,
-    unsafe_allow_html=True
-    )
+    get_transcribed_text()
 
-    # Custom CSS for input box
-    st.markdown(
-    """
-    <style>
-    div[data-baseweb="input"] {
-        width: 100% !important;      /* stretch full width */
-    }
-    div[data-baseweb="input"] > div {
-        font-size: 18px !important;  /* bigger text */
-        padding: 12px !important;    /* spacing inside */
-        border-radius: 10px !important; /* rounded corners */
-        border: 2px solid #0077b6 !important; /* blue border */
-        box-shadow: 1px 1px 6px rgba(0,0,0,0.1) !important;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True  
-    )
-     #taking the input from user
-    text=st.text_area(label='',
-                      max_chars=200,
-                      placeholder='Enter text',
-                      height=100)
+    if st.session_state.transcribed_text and not text.strip():
+        text = st.session_state.transcribed_text
 
-    #loading the models and vectorizer
-    # Load the saved tokenizer
     with open('tokenizer.pkl', 'rb') as f:
         tokenizer = pickle.load(f)
-
-    # Load the Keras model correctly
     model = tf.keras.models.load_model('rnn_fastext.h5')
-    seq=tokenizer.texts_to_sequences([text])
-    padded=np.array(tf.keras.preprocessing.sequence.pad_sequences(seq, maxlen=500))
 
-    #converting text to vector and making prediction
-    if text is not None and text!='':
-        #making prediction
-        result=model.predict(padded)[0][0]
-
-        if result>0.5:
-            st.warning('The text shows some signs of depression with a probability of '+str(round(result*100,2))+'%')
+    if text.strip():
+        seq = tokenizer.texts_to_sequences([text])
+        padded = np.array(tf.keras.preprocessing.sequence.pad_sequences(seq, maxlen=500))
+        result = model.predict(padded)[0][0]
+        if result > 0.5:
+            st.warning(f'The text shows some signs of depression with probability {round(result*100,2)}%')
         else:
             st.success('The text shows no signs of depression')
     else:
         st.warning('Please enter some text to predict')
 
 
-<<<<<<< HEAD
 # 1. Initialize session state
 if 'user_email' not in st.session_state:
     st.session_state.user_email = None
@@ -383,7 +302,3 @@ else:
 
 #demo_name = st.sidebar.selectbox("Choose a page", page_names_to_funcs.keys())
 #page_names_to_funcs[demo_name]()
-=======
-demo_name = st.sidebar.selectbox("Choose a page", page_names_to_funcs.keys())
-page_names_to_funcs[demo_name]()
->>>>>>> ebc9bb12ebec87bc7cddcffe9a047ce446c21d28
