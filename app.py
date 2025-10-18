@@ -221,9 +221,9 @@ def main_page_dl():
     model = tf.keras.models.load_model('rnn_fastext.h5')
 
     if text.strip():
-    seq = tokenizer.texts_to_sequences([text])
-    padded = np.array(tf.keras.preprocessing.sequence.pad_sequences(seq, maxlen=500))
-    result = model.predict(padded)[0][0]
+        seq = tokenizer.texts_to_sequences([text])
+        padded = np.array(tf.keras.preprocessing.sequence.pad_sequences(seq, maxlen=500))
+        result = model.predict(padded)[0][0]
 
     prob = float(result)  # convert to regular Python float
     if prob > 0.5:
