@@ -190,7 +190,7 @@ def main_page_ml():
     </div>
     """, unsafe_allow_html=True)
 
-    text = st.text_area(label='', max_chars=200, placeholder='Enter text or record voice...', height=100)
+    text = st.text_area(label='', max_chars=200, placeholder='Enter text', height=100)
     
 
    
