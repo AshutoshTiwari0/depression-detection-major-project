@@ -245,7 +245,7 @@ def audio_ml():
             else:
                 st.success('The text shows no signs of depression')
     else:
-            st.warning('Please enter some text to predict')
+            st.warning('Please record a voice to predict')
 # ------------------- DL Page -------------------
 def main_page_dl():
     text=""
@@ -316,7 +316,7 @@ def audio_dl():
         else:
             st.success(f'The text shows no signs of depression with probability {100 - prob*100:.2f}%')
     else:
-        st.warning('Please enter some text to predict')
+        st.warning('Please record a voice to predict')
 
 
 # 1. Initialize session state
