@@ -178,6 +178,7 @@ def intro_page():
 
 # ------------------- ML Page -------------------
 def main_page_ml():
+    text=""
     st.title('Sentia - Depression Detection App (ML)')
     st.markdown("""
     <div style="font-family:'Segoe UI',sans-serif;text-align:center;
@@ -208,6 +209,7 @@ def main_page_ml():
         st.warning('Please enter some text to predict')
 #--------audio ML----------#
 def audio_ml():
+    text=""
     r = sr.Recognizer()
 
     # Get audio from user
@@ -246,6 +248,7 @@ def audio_ml():
             st.warning('Please enter some text to predict')
 # ------------------- DL Page -------------------
 def main_page_dl():
+    text=""
     st.title('Sentia - Depression Detection App (DL)')
     st.image('rnn.webp', use_column_width=True)
     st.markdown("✍️ Enter Text Below", unsafe_allow_html=True)
@@ -273,6 +276,7 @@ def main_page_dl():
 #-----audio DL--------#
 
 def audio_dl():
+    text=""
     r = sr.Recognizer()
 
     # Get audio from user
