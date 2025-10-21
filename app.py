@@ -206,7 +206,44 @@ def main_page_ml():
             st.success('The text shows no signs of depression')
     else:
         st.warning('Please enter some text to predict')
+#--------audio ML----------#
+def audio_ml():
+    r = sr.Recognizer()
 
+    # Get audio from user
+    audio_value = st.audio_input("Record a voice message")
+
+    if audio_value is not None:
+        # Save the recorded file temporarily
+        with open("temp_audio.wav", "wb") as f:
+            f.write(audio_value.getvalue())
+
+        # Use SpeechRecognition to read and recognize
+        with sr.AudioFile("temp_audio.wav") as source:
+            audio_data = r.record(source)
+
+        try:
+            text = r.recognize_google(audio_data)
+            st.success(f"You said: {text}")
+        except sr.UnknownValueError:
+            st.error("Sorry, I could not understand what you said.")
+        except sr.RequestError as e:
+            st.error(f"Could not request results from Google Speech Recognition service; {e}")
+    else:
+        st.info("Please record your voice to begin.")
+
+    model = pickle.load(open('model.pkl','rb'))
+    vectorizer = pickle.load(open('tfidf.pkl','rb'))
+
+    if text.strip():
+            vectorized_text = vectorizer.transform([text])
+            result = model.predict(vectorized_text)[0]
+            if result == 1:
+                st.warning('The text shows some signs of depression')
+            else:
+                st.success('The text shows no signs of depression')
+    else:
+            st.warning('Please enter some text to predict')
 # ------------------- DL Page -------------------
 def main_page_dl():
     st.title('Sentia - Depression Detection App (DL)')
@@ -233,7 +270,49 @@ def main_page_dl():
     else:
         st.warning('Please enter some text to predict')
 
+#-----audio DL--------#
 
+def audio_dl():
+    r = sr.Recognizer()
+
+    # Get audio from user
+    audio_value = st.audio_input("Record a voice message")
+
+    if audio_value is not None:
+        # Save the recorded file temporarily
+        with open("temp_audio.wav", "wb") as f:
+            f.write(audio_value.getvalue())
+
+        # Use SpeechRecognition to read and recognize
+        with sr.AudioFile("temp_audio.wav") as source:
+            audio_data = r.record(source)
+
+        try:
+            text = r.recognize_google(audio_data)
+            st.success(f"You said: {text}")
+        except sr.UnknownValueError:
+            st.error("Sorry, I could not understand what you said.")
+        except sr.RequestError as e:
+            st.error(f"Could not request results from Google Speech Recognition service; {e}")
+    else:
+        st.info("Please record your voice to begin.")
+
+    with open('tokenizer.pkl', 'rb') as f:
+        tokenizer = pickle.load(f)
+    model = tf.keras.models.load_model('rnn_fastext.h5')
+
+    if text.strip():
+        seq = tokenizer.texts_to_sequences([text])
+        padded = np.array(tf.keras.preprocessing.sequence.pad_sequences(seq, maxlen=500))
+        result = model.predict(padded)[0][0]
+
+        prob = float(result)  # convert to regular Python float
+        if prob > 0.5:
+            st.warning(f'The text shows some signs of depression with probability {prob*100:.2f}%')
+        else:
+            st.success(f'The text shows no signs of depression with probability {100 - prob*100:.2f}%')
+    else:
+        st.warning('Please enter some text to predict')
 
 
 # 1. Initialize session state
@@ -252,7 +331,9 @@ else:
     page_names_to_funcs = {
         "Introduction": intro_page,
         "Detection ML based": main_page_ml,
-        "Detection DL based": main_page_dl
+        "Detection DL based": main_page_dl,
+        "Audio ML based": audio_ml,
+        "Audio DL based": audio_dl
     }
 
     # Sidebar page selection
