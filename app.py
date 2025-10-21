@@ -11,7 +11,7 @@ from supabase import create_client, Client
 import os
 from dotenv import load_dotenv
 import numpy as np
-
+import speech_recognition as sr
 
 # Load environment variables from .env file
 load_dotenv()
