@@ -12,8 +12,6 @@ import os
 from dotenv import load_dotenv
 import numpy as np
 
-#voice input
-import speech_recognition as sr
 
 # Load environment variables from .env file
 load_dotenv()
@@ -177,32 +175,6 @@ def intro_page():
         height=800
     )
 
-# ------------------- Voice Input -------------------
-def get_transcribed_text():
-    if "transcribed_text" not in st.session_state:
-        st.session_state.transcribed_text = ""
-
-    st.markdown("#### 🎤 Or record your voice:")
-    r = sr.Recognizer()
-    audio_value = st.audio_input("Record a voice message")
-
-    if audio_value is not None:
-        with open("temp_audio.wav", "wb") as f:
-            f.write(audio_value.getvalue())
-        try:
-            with sr.AudioFile("temp_audio.wav") as source:
-                audio_data = r.record(source)
-                text_from_audio = r.recognize_google(audio_data)
-                st.session_state.transcribed_text = text_from_audio
-                st.info(f"🗣 You said: **{text_from_audio}**")
-        except sr.UnknownValueError:
-            st.error("❌ Could not understand the audio.")
-            st.session_state.transcribed_text = ""
-        except sr.RequestError as e:
-            st.error(f"⚠️ Google Speech Recognition error: {e}")
-            st.session_state.transcribed_text = ""
-        finally:
-            os.remove("temp_audio.wav")
 
 # ------------------- ML Page -------------------
 def main_page_ml():
@@ -218,15 +190,10 @@ def main_page_ml():
     </div>
     """, unsafe_allow_html=True)
 
-    text = st.text_area(label='', max_chars=200, placeholder='Enter text or record voice...', height=100)
-    if text.strip():
-        st.session_state.transcribed_text = ""
+    text = st.text_area(label='', max_chars=200, placeholder='Enter text', height=100)
+    
 
-    get_transcribed_text()
-
-    if st.session_state.transcribed_text and not text.strip():
-        text = st.session_state.transcribed_text
-
+   
     model = pickle.load(open('model.pkl','rb'))
     vectorizer = pickle.load(open('tfidf.pkl','rb'))
 
@@ -247,13 +214,7 @@ def main_page_dl():
     st.markdown("✍️ Enter Text Below", unsafe_allow_html=True)
 
     text = st.text_area(label='', max_chars=200, placeholder='Enter text', height=100)
-    if text.strip():
-        st.session_state.transcribed_text = ""
-
-    get_transcribed_text()
-
-    if st.session_state.transcribed_text and not text.strip():
-        text = st.session_state.transcribed_text
+    
 
     with open('tokenizer.pkl', 'rb') as f:
         tokenizer = pickle.load(f)
@@ -263,12 +224,16 @@ def main_page_dl():
         seq = tokenizer.texts_to_sequences([text])
         padded = np.array(tf.keras.preprocessing.sequence.pad_sequences(seq, maxlen=500))
         result = model.predict(padded)[0][0]
-        if result > 0.5:
-            st.warning(f'The text shows some signs of depression with probability {round(result*100,2)}%')
+
+        prob = float(result)  # convert to regular Python float
+        if prob > 0.5:
+            st.warning(f'The text shows some signs of depression with probability {prob*100:.2f}%')
         else:
-            st.success('The text shows no signs of depression')
+            st.success(f'The text shows no signs of depression with probability {100 - prob*100:.2f}%')
     else:
         st.warning('Please enter some text to predict')
+
+
 
 
 # 1. Initialize session state
