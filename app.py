@@ -12,7 +12,7 @@ import os
 from dotenv import load_dotenv
 import numpy as np
 import speech_recognition as sr
-
+import pandas as pd
 # Load environment variables from .env file
 load_dotenv()
 
