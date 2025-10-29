@@ -207,6 +207,23 @@ def main_page_ml():
             st.success('The text shows no signs of depression')
     else:
         st.warning('Please enter some text to predict')
+
+    #showing the prediction for each class
+    results=[]
+    for i in model.classes_:
+        results.append(model.predict_proba(vectorized_text)[0][list(model.classes_).index(i)])
+
+    # Map class labels to readable names
+    label_map = {0: "Not Depressed", 1: "Depressed"}  # change as per your dataset
+    readable_classes = [label_map.get(i, i) for i in model.classes_]
+
+    df = pd.DataFrame({'Depression Type': readable_classes, 'Probability': results})
+
+    st.dataframe(df)
+
+    # Making a bar chart
+    st.bar_chart(data=df, x='Depression Type', y='Probability')
+
 #--------audio ML----------#
 def audio_ml():
     text=""
