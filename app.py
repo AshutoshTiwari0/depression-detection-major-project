@@ -302,6 +302,17 @@ def main_page_dl():
             st.warning(f'The text shows some signs of depression with probability {prob*100:.2f}%')
         else:
             st.success(f'The text shows no signs of depression with probability {100 - prob*100:.2f}%')
+        # Prepare data for visualization
+        df = pd.DataFrame({
+        'Depression Type': ['Not Depressed', 'Depressed'],
+        'Probability': [1 - prob, prob]
+        })
+
+        # Show table
+        st.dataframe(df)
+
+        # Show bar chart
+        st.bar_chart(data=df, x='Depression Type', y='Probability')
     else:
         st.warning('Please enter some text to predict')
 
@@ -349,7 +360,15 @@ def audio_dl():
             st.success(f'The text shows no signs of depression with probability {100 - prob*100:.2f}%')
     else:
         st.warning('Please record a voice to predict')
+    # Prepare data for visualization
+    df = pd.DataFrame({
+            'Depression Type': ['Not Depressed', 'Depressed'],
+            'Probability': [1 - prob, prob]
+    })
 
+        # Display table and chart
+    st.dataframe(df)
+    st.bar_chart(data=df, x='Depression Type', y='Probability')
 
 # 1. Initialize session state
 if 'user_email' not in st.session_state:
